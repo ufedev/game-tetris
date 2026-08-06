@@ -11,6 +11,7 @@ const nextCtx = nextCanvas.getContext('2d');
 
 const scoreEl = document.getElementById('score');
 const gameOverMsg = document.getElementById('game-over-msg');
+const restartBtn = document.getElementById('restart-btn');
 
 // --- Configuración del tablero ---
 const COLUMNS = 10;
@@ -88,6 +89,7 @@ let dropCounter = 0;
 let dropInterval = 1000; // milisegundos entre caídas automáticas
 let lastTime = 0;
 let gameOver = false;
+let animationFrameId = null;
 
 // --- Funciones de creación y utilidades ---
 
@@ -353,7 +355,7 @@ function update(time = 0) {
   }
 
   draw();
-  requestAnimationFrame(update);
+  animationFrameId = requestAnimationFrame(update);
 }
 
 // --- Controles de teclado ---
@@ -380,15 +382,23 @@ document.addEventListener('keydown', (event) => {
 // --- Inicio del juego ---
 
 function startGame() {
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+  }
+
   board = createMatrix(COLUMNS, ROWS);
   player.score = 0;
   gameOver = false;
   dropInterval = 1000;
+  dropCounter = 0;
+  lastTime = 0;
   gameOverMsg.style.display = 'none';
 
   updateScore();
   resetPiece();
   update();
 }
+
+restartBtn.addEventListener('click', startGame);
 
 startGame();

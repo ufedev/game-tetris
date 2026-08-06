@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tetris</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 20%, #1e1e2f 0%, #0a0a12 70%);
+      font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+      color: #e8e8f0;
+    }
+
+    .game-container {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+      padding: 20px;
+    }
+
+    canvas#tetris {
+      background: #111119;
+      border: 3px solid #4de3ff;
+      border-radius: 8px;
+      box-shadow:
+        0 0 15px rgba(77, 227, 255, 0.6),
+        0 0 40px rgba(77, 227, 255, 0.25),
+        inset 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 160px;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(77, 227, 255, 0.3);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 0 12px rgba(77, 227, 255, 0.15);
+    }
+
+    .panel h2 {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #4de3ff;
+    }
+
+    #score {
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(77, 227, 255, 0.7);
+    }
+
+    canvas#next-piece {
+      display: block;
+      margin: 0 auto;
+      background: #111119;
+      border-radius: 6px;
+    }
+
+    .title {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 22px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #4de3ff;
+      text-shadow: 0 0 12px rgba(77, 227, 255, 0.8);
+    }
+
+    .controls-hint {
+      font-size: 11px;
+      line-height: 1.6;
+      color: #9a9ab0;
+    }
+
+    #game-over-msg {
+      display: none;
+      color: #ff5c7a;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 6px;
+      text-shadow: 0 0 10px rgba(255, 92, 122, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="title">Tetris</div>
+
+  <div class="game-container">
+    <canvas id="tetris" width="300" height="600"></canvas>
+
+    <div class="sidebar">
+      <div class="panel">
+        <h2>Puntuación</h2>
+        <div id="score">0</div>
+        <div id="game-over-msg">¡Fin del juego!</div>
+      </div>
+
+      <div class="panel">
+        <h2>Siguiente pieza</h2>
+        <canvas id="next-piece" width="120" height="120"></canvas>
+      </div>
+
+      <div class="panel controls-hint">
+        <div>&#8592; &#8594; Mover</div>
+        <div>&#8593; Rotar</div>
+        <div>&#8595; Caída rápida</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

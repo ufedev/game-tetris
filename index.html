@@ -99,6 +99,26 @@
       margin-top: 6px;
       text-shadow: 0 0 10px rgba(255, 92, 122, 0.7);
     }
+
+    #restart-btn {
+      display: block;
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px 0;
+      background: rgba(77, 227, 255, 0.15);
+      border: 1px solid #4de3ff;
+      border-radius: 6px;
+      color: #e8e8f0;
+      font-family: inherit;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    #restart-btn:hover {
+      background: rgba(77, 227, 255, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -112,6 +132,7 @@
         <h2>Puntuación</h2>
         <div id="score">0</div>
         <div id="game-over-msg">¡Fin del juego!</div>
+        <button id="restart-btn">Reiniciar</button>
       </div>
 
       <div class="panel">

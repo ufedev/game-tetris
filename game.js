@@ -127,12 +127,45 @@ function drawMatrix(context, matrix, offset) {
   });
 }
 
+// Dibuja la "pieza fantasma": una silueta semitransparente que muestra
+// dónde quedará la pieza actual si cae hasta el fondo
+function drawGhost(context, matrix, offset) {
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        context.fillStyle = COLORS[value];
+        context.globalAlpha = 0.25;
+        context.fillRect(x + offset.x, y + offset.y, 1, 1);
+        context.globalAlpha = 1;
+
+        context.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        context.lineWidth = 0.05;
+        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
+      }
+    });
+  });
+}
+
+// Calcula la posición donde quedaría la pieza actual si cayera hasta el fondo
+function getGhostPosition() {
+  const ghostPos = { x: player.pos.x, y: player.pos.y };
+
+  while (
+    !collide(board, { matrix: player.matrix, pos: { x: ghostPos.x, y: ghostPos.y + 1 } })
+  ) {
+    ghostPos.y++;
+  }
+
+  return ghostPos;
+}
+
 // Redibuja todo el tablero y la pieza actual
 function draw() {
   ctx.fillStyle = '#111119';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   drawMatrix(ctx, board, { x: 0, y: 0 });
+  drawGhost(ctx, player.matrix, getGhostPosition());
   drawMatrix(ctx, player.matrix, player.pos);
 }
 

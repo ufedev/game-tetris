@@ -14,7 +14,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
 
@@ -24,7 +24,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-          claude_args: '--allowed-tools "Bash(git *),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh label create:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*)"'
+          claude_args: '--allowed-tools "Read,Glob,Grep,Edit,Write,Bash(git *),Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh label create:*),Bash(gh pr create:*),Bash(gh pr edit:*),Bash(gh pr list:*),Bash(gh pr view:*)"'
 
           prompt: |
             Estás analizando el issue #${{ github.event.issue.number }} de este repositorio

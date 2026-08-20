@@ -304,11 +304,19 @@ function pieceDrop() {
   dropCounter = 0;
 }
 
-// Provoca una caída instantánea hasta el fondo (caída rápida con flecha abajo)
-function pieceSoftDrop() {
-  pieceDrop();
-  player.score += 1;
+// Provoca una caída instantánea hasta la posición marcada por la pieza fantasma
+function pieceHardDrop() {
+  if (gameOver) return;
+
+  const ghostPos = getGhostPosition();
+  player.score += (ghostPos.y - player.pos.y) * 2;
+  player.pos.y = ghostPos.y;
+
+  merge(board, player);
+  clearLines();
+  resetPiece();
   updateScore();
+  dropCounter = 0;
 }
 
 // Revisa el tablero en busca de filas completas, las elimina y suma puntos
@@ -404,7 +412,7 @@ document.addEventListener('keydown', (event) => {
       movePiece(1);
       break;
     case 'ArrowDown':
-      pieceSoftDrop();
+      pieceHardDrop();
       break;
     case 'ArrowUp':
       rotatePiece(1);

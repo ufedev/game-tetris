@@ -8,8 +8,9 @@ jobs:
   triage:
     runs-on: self-hosted
     permissions:
-      contents: read
+      contents: write
       issues: write
+      pull-requests: write
       id-token: write
     steps:
       - name: Checkout repository
@@ -23,14 +24,14 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-          claude_args: '--allowed-tools "Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh label create:*)"'
+          claude_args: '--allowed-tools "Bash(git *),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh label create:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*)"'
 
           prompt: |
             Estás analizando el issue #${{ github.event.issue.number }} de este repositorio
             (un juego de Tetris en JavaScript vanilla, ver CLAUDE.md para contexto de arquitectura:
             `index.html` para estructura/estilos, `game.js` para toda la lógica del juego).
 
-            Tu tarea tiene dos partes:
+            Tu tarea tiene varias partes:
 
             1. Etiquetar el issue con labels apropiados, eligiendo SOLO entre este set fijo:
                - `bug`: algo no funciona como debería
@@ -50,17 +51,34 @@ jobs:
                sido puestos manualmente por una persona).
 
             2. Publicar un comentario de diagnóstico con `gh issue comment ${{ github.event.issue.number }}`
-               que sirva como punto de partida para que el equipo implemente la solución después. El
-               comentario debe incluir:
+               que incluya:
                - Un resumen breve del problema o pedido, en tus propias palabras.
                - La causa probable o el área de código afectada (referenciando funciones/archivos
                  concretos de `game.js` o `index.html` cuando sea posible, por ejemplo `collide()`,
                  `rotatePiece()`, `resetPiece()`, `update()`, etc.).
-               - Una sugerencia de enfoque para abordar la solución, sin escribir el código todavía —
-                 solo el diagnóstico y la dirección a seguir.
+               - El enfoque elegido para la solución.
                Si esta acción ya corrió antes sobre este mismo issue (por ejemplo, porque fue editado),
                publicá un nuevo comentario actualizado reflejando el contenido actual del issue, en vez
                de asumir que el diagnóstico anterior sigue siendo válido.
 
-            Todo el análisis y los comentarios deben estar en español, consistente con el resto del
-            repositorio.
+            3. Intentar implementar la solución:
+               - Primero corré `gh pr list --search "issue-${{ github.event.issue.number }}- in:head"` (o
+                 similar) para ver si ya existe una rama/PR abierto de una corrida anterior de este
+                 workflow para este mismo issue. Si existe, hacé checkout de esa rama y agregá los
+                 cambios nuevos ahí (nuevos commits), en vez de crear una rama duplicada.
+               - Si no existe, creá una rama nueva a partir de main, con un nombre tipo
+                 `issue-${{ github.event.issue.number }}-<slug-corto>`.
+               - Hacé los cambios de código necesarios en `game.js` y/o `index.html` para resolver el
+                 problema descripto en el issue, siguiendo los patrones y convenciones ya existentes en
+                 el código (comentarios y texto de UI en español).
+               - Comiteá y pusheá la rama.
+               - Abrí (o si ya existía, dejá que se actualice solo con el push) un PR con
+                 `gh pr create` que incluya `Closes #${{ github.event.issue.number }}` en la descripción
+                 para que el issue se cierre automáticamente al mergear, y que explique qué se cambió y
+                 por qué, en base al diagnóstico del paso 2.
+               - Si el issue es una pregunta pura (`question`) o un pedido que genuinamente no requiere
+                 cambios de código, usá tu criterio: no fuerces un PR vacío o irrelevante, dejá solo el
+                 diagnóstico del paso 2 como respuesta.
+
+            Todo el análisis, comentarios y descripciones de PR deben estar en español, consistente con
+            el resto del repositorio.

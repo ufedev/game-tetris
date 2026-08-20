@@ -12,11 +12,16 @@ const nextCtx = nextCanvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const gameOverMsg = document.getElementById('game-over-msg');
 const restartBtn = document.getElementById('restart-btn');
+const highScoresEl = document.getElementById('high-scores');
 
 // --- Configuración del tablero ---
 const COLUMNS = 10;
 const ROWS = 20;
 const BLOCK_SIZE = 30; // canvas: 10 * 30 = 300px, 20 * 30 = 600px
+
+// --- Tabla de mejores puntajes (persistida en el navegador) ---
+const HIGH_SCORES_KEY = 'tetris-high-scores';
+const MAX_HIGH_SCORES = 5;
 
 // Escalamos el contexto principal para poder dibujar en unidades de "celda"
 ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
@@ -376,10 +381,50 @@ function triggerGameOver() {
   gameOver = true;
   gameOverMsg.textContent = `¡Fin del juego! Puntuación final: ${player.score}`;
   gameOverMsg.style.display = 'block';
+  saveHighScore(player.score);
 }
 
 function updateScore() {
   scoreEl.textContent = player.score;
+}
+
+// --- Tabla de mejores puntajes ---
+
+// Lee los mejores puntajes guardados en localStorage (ordenados de mayor a menor)
+function loadHighScores() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(HIGH_SCORES_KEY));
+    return Array.isArray(raw) ? raw.filter((n) => Number.isFinite(n)) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Agrega un nuevo puntaje a la tabla, la reordena y conserva solo el top N
+function saveHighScore(score) {
+  if (score <= 0) return;
+
+  const scores = loadHighScores();
+  scores.push(score);
+  scores.sort((a, b) => b - a);
+  scores.length = Math.min(scores.length, MAX_HIGH_SCORES);
+
+  localStorage.setItem(HIGH_SCORES_KEY, JSON.stringify(scores));
+  renderHighScores();
+}
+
+// Vuelca la tabla de mejores puntajes guardada al panel lateral
+function renderHighScores() {
+  const scores = loadHighScores();
+
+  if (scores.length === 0) {
+    highScoresEl.innerHTML = '<li class="empty">Todavía no hay puntajes</li>';
+    return;
+  }
+
+  highScoresEl.innerHTML = scores
+    .map((score) => `<li>${score}</li>`)
+    .join('');
 }
 
 // --- Bucle principal del juego ---
@@ -442,4 +487,5 @@ function startGame() {
 
 restartBtn.addEventListener('click', startGame);
 
+renderHighScores();
 startGame();

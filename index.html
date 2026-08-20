@@ -73,6 +73,25 @@
       border-radius: 6px;
     }
 
+    .high-scores {
+      margin: 0;
+      padding: 0 0 0 20px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #e8e8f0;
+    }
+
+    .high-scores li::marker {
+      color: #4de3ff;
+    }
+
+    .high-scores .empty {
+      list-style: none;
+      margin-left: -20px;
+      color: #9a9ab0;
+      font-size: 12px;
+    }
+
     .title {
       position: absolute;
       top: 24px;
@@ -138,6 +157,11 @@
       <div class="panel">
         <h2>Siguiente pieza</h2>
         <canvas id="next-piece" width="120" height="120"></canvas>
+      </div>
+
+      <div class="panel">
+        <h2>Mejores puntajes</h2>
+        <ol id="high-scores" class="high-scores"></ol>
       </div>
 
       <div class="panel controls-hint">

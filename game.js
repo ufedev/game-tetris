@@ -24,26 +24,67 @@ const BLOCK_SIZE = 30; // canvas: 10 * 30 = 300px, 20 * 30 = 600px
 const HIGH_SCORES_KEY = 'tetris-high-scores';
 const MAX_HIGH_SCORES = 5;
 
-// --- Tema claro/oscuro ---
+// --- Temas ---
 const THEME_KEY = 'tetris-theme';
-const CANVAS_BG = { dark: '#111119', light: '#ffffff' };
+const THEMES = ['dark', 'light', 'retro', 'neon'];
+const THEME_ICONS = { dark: '🌙', light: '☀️', retro: '📟', neon: '💜' };
+const CANVAS_BG = { dark: '#111119', light: '#ffffff', retro: '#001a00', neon: '#0d0221' };
 
 // Escalamos el contexto principal para poder dibujar en unidades de "celda"
 ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
 
 // --- Definición de las piezas (Tetrominos) ---
 // Cada pieza se define como una matriz donde los valores != 0 representan
-// el color de la pieza (índice en el arreglo COLORS).
-const COLORS = [
-  null,
-  '#00f0f0', // I - cian
-  '#0000f0', // J - azul
-  '#f0a000', // L - naranja
-  '#f0f000', // O - amarillo
-  '#00f000', // S - verde
-  '#a000f0', // T - violeta
-  '#f00000', // Z - rojo
-];
+// el color de la pieza (índice en el arreglo de colores del tema activo).
+// Cada tema tiene su propia paleta para que las piezas también cambien de estilo.
+const COLOR_PALETTES = {
+  dark: [
+    null,
+    '#00f0f0', // I - cian
+    '#0000f0', // J - azul
+    '#f0a000', // L - naranja
+    '#f0f000', // O - amarillo
+    '#00f000', // S - verde
+    '#a000f0', // T - violeta
+    '#f00000', // Z - rojo
+  ],
+  light: [
+    null,
+    '#0089b3', // I - cian
+    '#0000f0', // J - azul
+    '#e08600', // L - naranja
+    '#c9b400', // O - amarillo
+    '#00a000', // S - verde
+    '#a000f0', // T - violeta
+    '#d40000', // Z - rojo
+  ],
+  retro: [
+    null,
+    '#39ff14', // I
+    '#2de812',
+    '#25c410',
+    '#1fa80d',
+    '#188c0a',
+    '#127006',
+    '#0c5404', // Z
+  ],
+  neon: [
+    null,
+    '#00fff2', // I
+    '#7b2fff', // J
+    '#ff9900', // L
+    '#fff700', // O
+    '#39ff8f', // S
+    '#ff2fd0', // T
+    '#ff3131', // Z
+  ],
+};
+
+// Devuelve la paleta de colores de piezas del tema activo
+function getColors() {
+  const theme = document.documentElement.getAttribute('data-theme');
+  return COLOR_PALETTES[theme] || COLOR_PALETTES.dark;
+}
 
 const SHAPES = {
   I: [
@@ -122,10 +163,11 @@ function createPiece() {
 
 // Dibuja una matriz (pieza o tablero) en el contexto indicado, desplazada por offset
 function drawMatrix(context, matrix, offset) {
+  const colors = getColors();
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
-        context.fillStyle = COLORS[value];
+        context.fillStyle = colors[value];
         context.fillRect(x + offset.x, y + offset.y, 1, 1);
 
         // Pequeño borde para dar efecto de "bloque" con volumen
@@ -140,10 +182,11 @@ function drawMatrix(context, matrix, offset) {
 // Dibuja la "pieza fantasma": una silueta semitransparente que muestra
 // dónde quedará la pieza actual si cae hasta el fondo
 function drawGhost(context, matrix, offset) {
+  const colors = getColors();
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
-        context.fillStyle = COLORS[value];
+        context.fillStyle = colors[value];
         context.globalAlpha = 0.25;
         context.fillRect(x + offset.x, y + offset.y, 1, 1);
         context.globalAlpha = 1;
@@ -192,6 +235,7 @@ function drawNextPiece() {
 
   const size = 24; // tamaño de bloque para la vista previa
   const matrix = player.next;
+  const colors = getColors();
 
   // Centramos la pieza dentro del canvas de vista previa
   const offsetX = (nextCanvas.width / size - matrix[0].length) / 2;
@@ -200,7 +244,7 @@ function drawNextPiece() {
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
-        nextCtx.fillStyle = COLORS[value];
+        nextCtx.fillStyle = colors[value];
         nextCtx.fillRect(
           (x + offsetX) * size,
           (y + offsetY) * size,
@@ -438,16 +482,17 @@ function renderHighScores() {
     .join('');
 }
 
-// --- Tema claro/oscuro ---
+// --- Temas ---
+
+const THEME_NAMES = { dark: 'oscuro', light: 'claro', retro: 'retro', neon: 'neón' };
 
 // Aplica el tema indicado al documento y actualiza el ícono del botón y los canvas
 function applyTheme(theme) {
+  if (!THEMES.includes(theme)) theme = 'dark';
+
   document.documentElement.setAttribute('data-theme', theme);
-  themeToggleBtn.textContent = theme === 'light' ? '🌙' : '☀️';
-  themeToggleBtn.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'
-  );
+  themeToggleBtn.textContent = THEME_ICONS[theme];
+  themeToggleBtn.setAttribute('aria-label', `Tema actual: ${THEME_NAMES[theme]}. Cambiar tema`);
   themeToggleBtn.title = themeToggleBtn.getAttribute('aria-label');
 
   // El canvas principal se redibuja solo en cada frame; el de "siguiente pieza"
@@ -463,10 +508,15 @@ function setTheme(theme) {
   applyTheme(theme);
 }
 
-themeToggleBtn.addEventListener('click', () => {
+// Alterna al siguiente tema disponible en la lista THEMES
+function cycleTheme() {
   const current = document.documentElement.getAttribute('data-theme');
-  setTheme(current === 'light' ? 'dark' : 'light');
-});
+  const currentIndex = THEMES.indexOf(current);
+  const next = THEMES[(currentIndex + 1) % THEMES.length];
+  setTheme(next);
+}
+
+themeToggleBtn.addEventListener('click', cycleTheme);
 
 // Si el usuario no eligió un tema manualmente, seguimos la preferencia del sistema en vivo
 window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (event) => {

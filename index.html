@@ -5,6 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tetris</title>
   <style>
+    /* Tema oscuro (valores por defecto) */
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #1e1e2f 0%, #0a0a12 70%);
+      --text-color: #e8e8f0;
+      --accent: #4de3ff;
+      --panel-bg: rgba(255, 255, 255, 0.05);
+      --panel-border: rgba(77, 227, 255, 0.3);
+      --panel-shadow: rgba(77, 227, 255, 0.15);
+      --canvas-bg: #111119;
+      --canvas-border: #4de3ff;
+      --canvas-shadow-1: rgba(77, 227, 255, 0.6);
+      --canvas-shadow-2: rgba(77, 227, 255, 0.25);
+      --canvas-inset-shadow: rgba(0, 0, 0, 0.6);
+      --muted: #9a9ab0;
+      --danger: #ff5c7a;
+      --danger-shadow: rgba(255, 92, 122, 0.7);
+      --restart-bg: rgba(77, 227, 255, 0.15);
+      --restart-hover-bg: rgba(77, 227, 255, 0.3);
+      --score-shadow: rgba(77, 227, 255, 0.7);
+      --title-shadow: rgba(77, 227, 255, 0.8);
+    }
+
+    /* Tema claro */
+    :root[data-theme='light'] {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #eef2f8 0%, #d7dee8 70%);
+      --text-color: #1b1e2b;
+      --accent: #0089b3;
+      --panel-bg: rgba(0, 0, 0, 0.04);
+      --panel-border: rgba(0, 137, 179, 0.35);
+      --panel-shadow: rgba(0, 137, 179, 0.12);
+      --canvas-bg: #ffffff;
+      --canvas-border: #0089b3;
+      --canvas-shadow-1: rgba(0, 137, 179, 0.35);
+      --canvas-shadow-2: rgba(0, 137, 179, 0.15);
+      --canvas-inset-shadow: rgba(0, 0, 0, 0.12);
+      --muted: #5b6072;
+      --danger: #c8003c;
+      --danger-shadow: rgba(200, 0, 60, 0.5);
+      --restart-bg: rgba(0, 137, 179, 0.12);
+      --restart-hover-bg: rgba(0, 137, 179, 0.22);
+      --score-shadow: rgba(0, 137, 179, 0.4);
+      --title-shadow: rgba(0, 137, 179, 0.5);
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -15,9 +59,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 20%, #1e1e2f 0%, #0a0a12 70%);
+      background: var(--bg-gradient);
       font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
-      color: #e8e8f0;
+      color: var(--text-color);
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
     .game-container {
@@ -28,13 +73,14 @@
     }
 
     canvas#tetris {
-      background: #111119;
-      border: 3px solid #4de3ff;
+      background: var(--canvas-bg);
+      border: 3px solid var(--canvas-border);
       border-radius: 8px;
       box-shadow:
-        0 0 15px rgba(77, 227, 255, 0.6),
-        0 0 40px rgba(77, 227, 255, 0.25),
-        inset 0 0 20px rgba(0, 0, 0, 0.6);
+        0 0 15px var(--canvas-shadow-1),
+        0 0 40px var(--canvas-shadow-2),
+        inset 0 0 20px var(--canvas-inset-shadow);
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
     .sidebar {
@@ -45,11 +91,12 @@
     }
 
     .panel {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(77, 227, 255, 0.3);
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
       border-radius: 10px;
       padding: 14px 16px;
-      box-shadow: 0 0 12px rgba(77, 227, 255, 0.15);
+      box-shadow: 0 0 12px var(--panel-shadow);
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     .panel h2 {
@@ -57,20 +104,21 @@
       font-size: 13px;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: #4de3ff;
+      color: var(--accent);
     }
 
     #score {
       font-size: 28px;
       font-weight: bold;
-      text-shadow: 0 0 10px rgba(77, 227, 255, 0.7);
+      text-shadow: 0 0 10px var(--score-shadow);
     }
 
     canvas#next-piece {
       display: block;
       margin: 0 auto;
-      background: #111119;
+      background: var(--canvas-bg);
       border-radius: 6px;
+      transition: background 0.3s ease;
     }
 
     .high-scores {
@@ -78,17 +126,17 @@
       padding: 0 0 0 20px;
       font-size: 13px;
       line-height: 1.8;
-      color: #e8e8f0;
+      color: var(--text-color);
     }
 
     .high-scores li::marker {
-      color: #4de3ff;
+      color: var(--accent);
     }
 
     .high-scores .empty {
       list-style: none;
       margin-left: -20px;
-      color: #9a9ab0;
+      color: var(--muted);
       font-size: 12px;
     }
 
@@ -100,23 +148,23 @@
       font-size: 22px;
       letter-spacing: 4px;
       text-transform: uppercase;
-      color: #4de3ff;
-      text-shadow: 0 0 12px rgba(77, 227, 255, 0.8);
+      color: var(--accent);
+      text-shadow: 0 0 12px var(--title-shadow);
     }
 
     .controls-hint {
       font-size: 11px;
       line-height: 1.6;
-      color: #9a9ab0;
+      color: var(--muted);
     }
 
     #game-over-msg {
       display: none;
-      color: #ff5c7a;
+      color: var(--danger);
       font-weight: bold;
       text-align: center;
       margin-top: 6px;
-      text-shadow: 0 0 10px rgba(255, 92, 122, 0.7);
+      text-shadow: 0 0 10px var(--danger-shadow);
     }
 
     #restart-btn {
@@ -124,10 +172,10 @@
       margin-top: 10px;
       width: 100%;
       padding: 8px 0;
-      background: rgba(77, 227, 255, 0.15);
-      border: 1px solid #4de3ff;
+      background: var(--restart-bg);
+      border: 1px solid var(--accent);
       border-radius: 6px;
-      color: #e8e8f0;
+      color: var(--text-color);
       font-family: inherit;
       font-size: 13px;
       letter-spacing: 1px;
@@ -136,11 +184,46 @@
     }
 
     #restart-btn:hover {
-      background: rgba(77, 227, 255, 0.3);
+      background: var(--restart-hover-bg);
+    }
+
+    #theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 50%;
+      color: var(--text-color);
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    #theme-toggle:hover {
+      background: var(--restart-hover-bg);
     }
   </style>
+  <script>
+    // Aplicamos el tema antes de pintar la página para evitar parpadeos:
+    // usamos la preferencia guardada o, si no hay ninguna, la del sistema operativo.
+    (function () {
+      var guardado = localStorage.getItem('tetris-theme');
+      var delSistema = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+        ? 'light'
+        : 'dark';
+      document.documentElement.setAttribute('data-theme', guardado || delSistema);
+    })();
+  </script>
 </head>
 <body>
+  <button id="theme-toggle" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema claro/oscuro"></button>
+
   <div class="title">Tetris</div>
 
   <div class="game-container">

@@ -13,6 +13,7 @@ const scoreEl = document.getElementById('score');
 const gameOverMsg = document.getElementById('game-over-msg');
 const restartBtn = document.getElementById('restart-btn');
 const highScoresEl = document.getElementById('high-scores');
+const themeToggleBtn = document.getElementById('theme-toggle');
 
 // --- Configuración del tablero ---
 const COLUMNS = 10;
@@ -22,6 +23,10 @@ const BLOCK_SIZE = 30; // canvas: 10 * 30 = 300px, 20 * 30 = 600px
 // --- Tabla de mejores puntajes (persistida en el navegador) ---
 const HIGH_SCORES_KEY = 'tetris-high-scores';
 const MAX_HIGH_SCORES = 5;
+
+// --- Tema claro/oscuro ---
+const THEME_KEY = 'tetris-theme';
+const CANVAS_BG = { dark: '#111119', light: '#ffffff' };
 
 // Escalamos el contexto principal para poder dibujar en unidades de "celda"
 ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
@@ -164,9 +169,15 @@ function getGhostPosition() {
   return ghostPos;
 }
 
+// Devuelve el color de fondo de los canvas según el tema activo (claro u oscuro)
+function getCanvasBackground() {
+  const theme = document.documentElement.getAttribute('data-theme');
+  return CANVAS_BG[theme] || CANVAS_BG.dark;
+}
+
 // Redibuja todo el tablero y la pieza actual
 function draw() {
-  ctx.fillStyle = '#111119';
+  ctx.fillStyle = getCanvasBackground();
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   drawMatrix(ctx, board, { x: 0, y: 0 });
@@ -176,7 +187,7 @@ function draw() {
 
 // Dibuja la vista previa de la siguiente pieza en su propio canvas
 function drawNextPiece() {
-  nextCtx.fillStyle = '#111119';
+  nextCtx.fillStyle = getCanvasBackground();
   nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
 
   const size = 24; // tamaño de bloque para la vista previa
@@ -426,6 +437,44 @@ function renderHighScores() {
     .map((score) => `<li>${score}</li>`)
     .join('');
 }
+
+// --- Tema claro/oscuro ---
+
+// Aplica el tema indicado al documento y actualiza el ícono del botón y los canvas
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeToggleBtn.textContent = theme === 'light' ? '🌙' : '☀️';
+  themeToggleBtn.setAttribute(
+    'aria-label',
+    theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'
+  );
+  themeToggleBtn.title = themeToggleBtn.getAttribute('aria-label');
+
+  // El canvas principal se redibuja solo en cada frame; el de "siguiente pieza"
+  // solo cambia cuando aparece una pieza nueva, así que lo refrescamos a mano
+  if (player.next) {
+    drawNextPiece();
+  }
+}
+
+// Guarda la preferencia del usuario y aplica el tema elegido
+function setTheme(theme) {
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme(theme);
+}
+
+themeToggleBtn.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  setTheme(current === 'light' ? 'dark' : 'light');
+});
+
+// Si el usuario no eligió un tema manualmente, seguimos la preferencia del sistema en vivo
+window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (event) => {
+  if (localStorage.getItem(THEME_KEY)) return;
+  applyTheme(event.matches ? 'light' : 'dark');
+});
+
+applyTheme(document.documentElement.getAttribute('data-theme'));
 
 // --- Bucle principal del juego ---
 
